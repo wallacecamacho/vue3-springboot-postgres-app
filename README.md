@@ -29,6 +29,8 @@ deciding which technology stack to choose through comparisons with various other
 
 # Database POSTGRESQL WITh DOCKER
  
+![modelo_ER](https://github.com/wallacecamacho/vue3-springboot-postgres-app/assets/1315080/e422aaea-ae95-4bcd-8f1b-37f16e57ac86)
+
  
 ```shell
 cd desafio
