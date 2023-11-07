@@ -28,9 +28,12 @@ Through this project, you can learn how to implement backend applications based 
 deciding which technology stack to choose through comparisons with various other technology stacks.
 
 # Database POSTGRESQL WITh DOCKER
-
-
-
+ 
+ 
+```shell
+cd desafio
+ docker docker compose -f docker-compose-postgres.yml up -d
+```
 
 # Getting started
 
