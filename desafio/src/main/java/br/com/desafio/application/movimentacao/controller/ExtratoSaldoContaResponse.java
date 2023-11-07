@@ -6,6 +6,5 @@ import br.com.desafio.domain.conta.ExtratoContaMovimentacaoVO;
 
 @JsonRootName("extrato")
 public record ExtratoSaldoContaResponse(ExtratoContaMovimentacaoVO extrato) {
-	public ExtratoSaldoContaResponse {}
-
+    public ExtratoSaldoContaResponse {}
 }

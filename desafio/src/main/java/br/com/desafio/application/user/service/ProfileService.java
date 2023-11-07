@@ -5,10 +5,11 @@ import java.util.NoSuchElementException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.domain.user.ProfileVO;
 import br.com.desafio.domain.user.User;
 import br.com.desafio.domain.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor

@@ -4,10 +4,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.application.user.service.ProfileService;
 import br.com.desafio.domain.user.ProfileVO;
 import br.com.desafio.domain.user.User;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,5 +20,4 @@ public class ProfileController {
         ProfileVO profile = profileService.getProfile(me, target);
         return new ProfileRecord(profile);
     }
-
 }

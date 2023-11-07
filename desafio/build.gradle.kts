@@ -4,7 +4,7 @@ plugins {
     id("com.diffplug.spotless") version "6.18.0"
     id("org.springframework.boot") version "3.0.5"
     id("io.spring.dependency-management") version "1.1.0"
-    //id("org.springdoc.openapi-gradle-plugin") version "2.0.0"
+    // id("org.springdoc.openapi-gradle-plugin") version "2.0.0"
 }
 
 group = "br.com.desafio"
@@ -41,7 +41,6 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
 }
-
 
 tasks.withType<Test> {
     useJUnitPlatform()

@@ -4,6 +4,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.application.config.BearerTokenProvider;
 import br.com.desafio.application.user.controller.LoginRequest;
 import br.com.desafio.application.user.controller.SignUpRequest;
@@ -13,7 +15,6 @@ import br.com.desafio.domain.correntista.CorrentistaRepository;
 import br.com.desafio.domain.user.User;
 import br.com.desafio.domain.user.UserRepository;
 import br.com.desafio.domain.user.UserVO;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,6 @@ public class UserService {
         if (userRepository.existsByEmail(request.email())) {
             throw new IllegalArgumentException("Email `%s` is already exists.".formatted(request.email()));
         }
-
 
         User userSaved = userRepository.save(this.createNewUser(request));
         Correntista teste = createCorrentista(request, userSaved);
@@ -74,14 +74,15 @@ public class UserService {
                 .email(request.email())
                 .username(request.username())
                 .password(passwordEncoder.encode(request.password()))
-                //.correntista(new Correntista(request.cpf()))
+                // .correntista(new Correntista(request.cpf()))
                 .build();
     }
+
     private Correntista createCorrentista(SignUpRequest request, User user) {
-    	return Correntista.builder()
-    			//.id(user.getId())
-    			.cpf(request.cpf())
-    			.user(user)
-    			.build();
+        return Correntista.builder()
+                // .id(user.getId())
+                .cpf(request.cpf())
+                .user(user)
+                .build();
     }
 }

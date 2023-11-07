@@ -4,11 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
-import br.com.desafio.domain.correntista.Correntista;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,11 +15,18 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrimaryKeyJoinColumn;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import br.com.desafio.domain.correntista.Correntista;
 
 @Entity
 @Getter
@@ -47,13 +49,11 @@ public class User {
 
     @Column(length = 30, nullable = false, unique = false)
     private String username;
-    
 
-    //@JoinColumn(name = "correntista_id")
+    // @JoinColumn(name = "correntista_id")
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private Correntista correntista;
-    
 
     @Builder.Default
     @Column(length = 500, nullable = false)
@@ -72,8 +72,6 @@ public class User {
     @Transient
     @Builder.Default
     private boolean anonymous = false;
-    
-    
 
     public static User anonymous() {
         return User.builder().id(null).anonymous(true).build();

@@ -46,23 +46,20 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .cors(SecurityConfigurerAdapter::and)
-                .authorizeHttpRequests(
-                        requests -> 
-                        requests.requestMatchers(SecurityConstants.AUTH_WHITE_LIST).permitAll()
-                        .requestMatchers(HttpMethod.POST, 
-                        		"/api/users", 
-                        		"/api/users/login")
-                                .permitAll()
-                                .requestMatchers(
-                                        HttpMethod.GET,
-                                        "/api/articles/{slug}/comments",
-                                        "/api/articles/{slug}",
-                                        "/api/articles",
-                                        "/api/profiles/{username}",
-                                        "/api/tags")
-                                .permitAll()
-                                .anyRequest()
-                                .authenticated())
+                .authorizeHttpRequests(requests -> requests.requestMatchers(SecurityConstants.AUTH_WHITE_LIST)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/users", "/api/users/login")
+                        .permitAll()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/articles/{slug}/comments",
+                                "/api/articles/{slug}",
+                                "/api/articles",
+                                "/api/profiles/{username}",
+                                "/api/tags")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt)
                 .sessionManagement(manager -> manager.sessionCreationPolicy(STATELESS))
                 .exceptionHandling(

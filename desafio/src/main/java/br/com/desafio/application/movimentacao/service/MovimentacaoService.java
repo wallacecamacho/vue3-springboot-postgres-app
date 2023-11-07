@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.application.movimentacao.controller.CreateCreditoContaRequest;
 import br.com.desafio.application.movimentacao.controller.CreateTransferenciaContaRequest;
 import br.com.desafio.domain.conta.Conta;
@@ -22,175 +24,177 @@ import br.com.desafio.domain.conta.SaldoVO;
 import br.com.desafio.domain.movimentacao.Movimentacao;
 import br.com.desafio.domain.movimentacao.MovimentacaoRepository;
 import br.com.desafio.domain.user.User;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MovimentacaoService {
-	private final MovimentacaoRepository movimentacaoRepository;
-	private final ContaRepository contaRepository;
-	private final ContaMovimentacaoRepository contaMovimentacaoRepository; 
+    private final MovimentacaoRepository movimentacaoRepository;
+    private final ContaRepository contaRepository;
+    private final ContaMovimentacaoRepository contaMovimentacaoRepository;
 
-	@Transactional
-	public SaldoVO saldo(User me, UUID id) {
-		if (!contaRepository.existsById(id)) {
-			throw new IllegalArgumentException("Conta `%s` not exists.".formatted(id));
-		}
-		return null;
-	}
-	
-	@Transactional
-	public ContaMovimentacaoVO creditarValor(User me, CreateCreditoContaRequest request) {
-		if (!contaRepository.existsById(request.id())) {
-			throw new IllegalArgumentException("Conta `%s` not exists.".formatted(request.conta()));
-		}
+    @Transactional
+    public SaldoVO saldo(User me, UUID id) {
+        if (!contaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Conta `%s` not exists.".formatted(id));
+        }
+        return null;
+    }
 
-		List<Conta> contaList = contaRepository.findByIdAndAgenciaAndConta(request.id(),
-				request.agencia(),
-				request.conta()); 
+    @Transactional
+    public ContaMovimentacaoVO creditarValor(User me, CreateCreditoContaRequest request) {
+        if (!contaRepository.existsById(request.id())) {
+            throw new IllegalArgumentException("Conta `%s` not exists.".formatted(request.conta()));
+        }
 
-		Conta conta = contaList.stream().findFirst().get();
+        List<Conta> contaList =
+                contaRepository.findByIdAndAgenciaAndConta(request.id(), request.agencia(), request.conta());
 
-		Movimentacao movimentacao = Movimentacao.builder()
-				.agencia(request.agencia())
-				.conta(request.conta())
-				.valor(request.valor())
-				.tipoTransacao(request.transacao())
-				.build();
+        Conta conta = contaList.stream().findFirst().get();
 
-		movimentacao = movimentacaoRepository.save(movimentacao);
+        Movimentacao movimentacao = Movimentacao.builder()
+                .agencia(request.agencia())
+                .conta(request.conta())
+                .valor(request.valor())
+                .tipoTransacao(request.transacao())
+                .build();
 
-		ContaMovimentacao contaMovimentacao = ContaMovimentacao.builder()
-				.conta(conta)
-				.movimentacao(movimentacao)
-				.build();
-		contaMovimentacao.getId().setContaId(conta.getId());
-		contaMovimentacao.getId().setMovimentacaoId(movimentacao.getId());
+        movimentacao = movimentacaoRepository.save(movimentacao);
 
-		movimentacao.getContaMovimentacao().add(contaMovimentacao);
-		contaMovimentacao = contaMovimentacaoRepository.save(contaMovimentacao);
-		return new ContaMovimentacaoVO(contaMovimentacao);
-	}
+        ContaMovimentacao contaMovimentacao = ContaMovimentacao.builder()
+                .conta(conta)
+                .movimentacao(movimentacao)
+                .build();
+        contaMovimentacao.getId().setContaId(conta.getId());
+        contaMovimentacao.getId().setMovimentacaoId(movimentacao.getId());
 
-	@Transactional
-	public ContaMovimentacaoVO transferirValor(User me, CreateTransferenciaContaRequest request) {
-		if (!contaRepository.existsById(request.id())) {
-			throw new IllegalArgumentException("Conta `%s` not exists.".formatted(request.conta()));
-		}
+        movimentacao.getContaMovimentacao().add(contaMovimentacao);
+        contaMovimentacao = contaMovimentacaoRepository.save(contaMovimentacao);
+        return new ContaMovimentacaoVO(contaMovimentacao);
+    }
 
-		List<BigDecimal> cred = new ArrayList<BigDecimal>();
-		List<BigDecimal> deb = new ArrayList<BigDecimal>();
-		Conta contaOrigem = contaRepository.getReferenceById(request.id()); 
-		
-		Set<ContaMovimentacao> movOrigemCred = contaOrigem.getContaMovimentacao().stream()
-				.filter(contaMovimentacao -> contaMovimentacao.getMovimentacao()
-						.getTipoTransacao().equals("CRED"))
-				.collect(Collectors.toSet());
-		
-		Set<ContaMovimentacao> movOrigemDeb = contaOrigem.getContaMovimentacao().stream()
-				.filter(contaMovimentacao -> contaMovimentacao.getMovimentacao()
-						.getTipoTransacao().equals("TRAN"))
-				.collect(Collectors.toSet());
+    @Transactional
+    public ContaMovimentacaoVO transferirValor(User me, CreateTransferenciaContaRequest request) {
+        if (!contaRepository.existsById(request.id())) {
+            throw new IllegalArgumentException("Conta `%s` not exists.".formatted(request.conta()));
+        }
 
-		movOrigemCred.forEach(arg0 -> {	cred.add(arg0.getMovimentacao().getValor());});
-		movOrigemDeb.forEach(arg0 -> {	deb.add(arg0.getMovimentacao().getValor());});
+        List<BigDecimal> cred = new ArrayList<BigDecimal>();
+        List<BigDecimal> deb = new ArrayList<BigDecimal>();
+        Conta contaOrigem = contaRepository.getReferenceById(request.id());
 
-		BigDecimal transacoesCredito = cred.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		BigDecimal transacoesDebito = deb.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		
-		BigDecimal saldoConta = transacoesCredito.subtract(transacoesDebito);
-		BigDecimal saldoNovoOrigem = new BigDecimal(0);
-		if (saldoConta.compareTo(BigDecimal.ZERO) > 0 && saldoConta.compareTo(request.valor()) > 0 ) {			
-			saldoNovoOrigem = saldoConta.subtract(request.valor());
-		}
-		
-		List<Conta> contaList = contaRepository.findByAgenciaAndConta(request.agencia(),
-				request.conta()); 
+        Set<ContaMovimentacao> movOrigemCred = contaOrigem.getContaMovimentacao().stream()
+                .filter(contaMovimentacao ->
+                        contaMovimentacao.getMovimentacao().getTipoTransacao().equals("CRED"))
+                .collect(Collectors.toSet());
 
-		//DESTINO
-		Conta contaDestino = contaList.stream().findFirst().get();
+        Set<ContaMovimentacao> movOrigemDeb = contaOrigem.getContaMovimentacao().stream()
+                .filter(contaMovimentacao ->
+                        contaMovimentacao.getMovimentacao().getTipoTransacao().equals("TRAN"))
+                .collect(Collectors.toSet());
 
-		Movimentacao movimentacao = Movimentacao.builder()
-				.agencia(request.agencia())
-				.conta(request.conta())
-				.valor(request.valor())
-				.tipoTransacao("CRED")
-				.build();
+        movOrigemCred.forEach(arg0 -> {
+            cred.add(arg0.getMovimentacao().getValor());
+        });
+        movOrigemDeb.forEach(arg0 -> {
+            deb.add(arg0.getMovimentacao().getValor());
+        });
 
-		movimentacao = movimentacaoRepository.save(movimentacao);
+        BigDecimal transacoesCredito = cred.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal transacoesDebito = deb.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		ContaMovimentacao contaMovimentacao = ContaMovimentacao.builder()
-				.conta(contaDestino)
-				.movimentacao(movimentacao)
-				.build();
-		contaMovimentacao.getId().setContaId(contaDestino.getId());
-		contaMovimentacao.getId().setMovimentacaoId(movimentacao.getId());
+        BigDecimal saldoConta = transacoesCredito.subtract(transacoesDebito);
+        BigDecimal saldoNovoOrigem = new BigDecimal(0);
+        if (saldoConta.compareTo(BigDecimal.ZERO) > 0 && saldoConta.compareTo(request.valor()) > 0) {
+            saldoNovoOrigem = saldoConta.subtract(request.valor());
+        }
 
-		movimentacao.getContaMovimentacao().add(contaMovimentacao);
-		contaMovimentacao = contaMovimentacaoRepository.save(contaMovimentacao);
-		
-		
-		//ORIGEM
-		Movimentacao movimentacaoOrigem = Movimentacao.builder()
-				.agencia(contaOrigem.getAgencia())
-				.conta(contaOrigem.getConta())
-				.valor(saldoNovoOrigem)
-				.tipoTransacao("TRAN")
-				.build();
+        List<Conta> contaList = contaRepository.findByAgenciaAndConta(request.agencia(), request.conta());
 
-		movimentacaoOrigem = movimentacaoRepository.save(movimentacaoOrigem);
+        // DESTINO
+        Conta contaDestino = contaList.stream().findFirst().get();
 
-		ContaMovimentacao contaMovimentacaoOrigem = ContaMovimentacao.builder()
-				.conta(contaOrigem)
-				.movimentacao(movimentacaoOrigem)
-				.build();
-		contaMovimentacaoOrigem.getId().setContaId(contaOrigem.getId());
-		contaMovimentacaoOrigem.getId().setMovimentacaoId(movimentacaoOrigem.getId());
+        Movimentacao movimentacao = Movimentacao.builder()
+                .agencia(request.agencia())
+                .conta(request.conta())
+                .valor(request.valor())
+                .tipoTransacao("CRED")
+                .build();
 
-		movimentacaoOrigem.getContaMovimentacao().add(contaMovimentacaoOrigem);
-		contaMovimentacaoOrigem = contaMovimentacaoRepository.save(contaMovimentacaoOrigem);
-	
-		return new ContaMovimentacaoVO(contaMovimentacao);
-	}
-	
-	@Transactional
-	public ExtratoContaMovimentacaoVO extratoSaldo(User me, UUID id) {
-		if (!contaRepository.existsById(id)) {
-			throw new IllegalArgumentException("Conta `%s` not exists.".formatted(id));
-		}
+        movimentacao = movimentacaoRepository.save(movimentacao);
 
-		List<BigDecimal> cred = new ArrayList<BigDecimal>();
-		List<BigDecimal> deb = new ArrayList<BigDecimal>();
-		Conta contaOrigem = contaRepository.getReferenceById(id); 
-		
-		Set<ContaMovimentacaoVO> extr = contaOrigem.getContaMovimentacao().stream()
-				.map(contaMovimentacao -> new ContaMovimentacaoVO(contaMovimentacao))
-				.collect(Collectors.toSet());
-		
+        ContaMovimentacao contaMovimentacao = ContaMovimentacao.builder()
+                .conta(contaDestino)
+                .movimentacao(movimentacao)
+                .build();
+        contaMovimentacao.getId().setContaId(contaDestino.getId());
+        contaMovimentacao.getId().setMovimentacaoId(movimentacao.getId());
 
-		Set<ContaMovimentacao> movOrigemCred = contaOrigem.getContaMovimentacao().stream()
-				.filter(contaMovimentacao -> contaMovimentacao.getMovimentacao()
-						.getTipoTransacao().equals("CRED"))
-				.collect(Collectors.toSet());
-		
-		Set<ContaMovimentacao> movOrigemDeb = contaOrigem.getContaMovimentacao().stream()
-				.filter(contaMovimentacao -> contaMovimentacao.getMovimentacao()
-						.getTipoTransacao().equals("TRAN"))
-				.collect(Collectors.toSet());
+        movimentacao.getContaMovimentacao().add(contaMovimentacao);
+        contaMovimentacao = contaMovimentacaoRepository.save(contaMovimentacao);
 
-		movOrigemCred.forEach(arg0 -> {	cred.add(arg0.getMovimentacao().getValor());});
-		movOrigemDeb.forEach(arg0 -> {	deb.add(arg0.getMovimentacao().getValor());});
+        // ORIGEM
+        Movimentacao movimentacaoOrigem = Movimentacao.builder()
+                .agencia(contaOrigem.getAgencia())
+                .conta(contaOrigem.getConta())
+                .valor(saldoNovoOrigem)
+                .tipoTransacao("TRAN")
+                .build();
 
-		BigDecimal transacoesCredito = cred.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		BigDecimal transacoesDebito = deb.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-		
-		BigDecimal saldoConta = transacoesCredito.subtract(transacoesDebito);
+        movimentacaoOrigem = movimentacaoRepository.save(movimentacaoOrigem);
 
-		
-		return new ExtratoContaMovimentacaoVO(extr, saldoConta);
-	}
-	
-	private BigDecimal calculaSaldo(Conta conta) {
-		return null;
-	}
+        ContaMovimentacao contaMovimentacaoOrigem = ContaMovimentacao.builder()
+                .conta(contaOrigem)
+                .movimentacao(movimentacaoOrigem)
+                .build();
+        contaMovimentacaoOrigem.getId().setContaId(contaOrigem.getId());
+        contaMovimentacaoOrigem.getId().setMovimentacaoId(movimentacaoOrigem.getId());
+
+        movimentacaoOrigem.getContaMovimentacao().add(contaMovimentacaoOrigem);
+        contaMovimentacaoOrigem = contaMovimentacaoRepository.save(contaMovimentacaoOrigem);
+
+        return new ContaMovimentacaoVO(contaMovimentacao);
+    }
+
+    @Transactional
+    public ExtratoContaMovimentacaoVO extratoSaldo(User me, UUID id) {
+        if (!contaRepository.existsById(id)) {
+            throw new IllegalArgumentException("Conta `%s` not exists.".formatted(id));
+        }
+
+        List<BigDecimal> cred = new ArrayList<BigDecimal>();
+        List<BigDecimal> deb = new ArrayList<BigDecimal>();
+        Conta contaOrigem = contaRepository.getReferenceById(id);
+
+        Set<ContaMovimentacaoVO> extr = contaOrigem.getContaMovimentacao().stream()
+                .map(contaMovimentacao -> new ContaMovimentacaoVO(contaMovimentacao))
+                .collect(Collectors.toSet());
+
+        Set<ContaMovimentacao> movOrigemCred = contaOrigem.getContaMovimentacao().stream()
+                .filter(contaMovimentacao ->
+                        contaMovimentacao.getMovimentacao().getTipoTransacao().equals("CRED"))
+                .collect(Collectors.toSet());
+
+        Set<ContaMovimentacao> movOrigemDeb = contaOrigem.getContaMovimentacao().stream()
+                .filter(contaMovimentacao ->
+                        contaMovimentacao.getMovimentacao().getTipoTransacao().equals("TRAN"))
+                .collect(Collectors.toSet());
+
+        movOrigemCred.forEach(arg0 -> {
+            cred.add(arg0.getMovimentacao().getValor());
+        });
+        movOrigemDeb.forEach(arg0 -> {
+            deb.add(arg0.getMovimentacao().getValor());
+        });
+
+        BigDecimal transacoesCredito = cred.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal transacoesDebito = deb.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal saldoConta = transacoesCredito.subtract(transacoesDebito);
+
+        return new ExtratoContaMovimentacaoVO(extr, saldoConta);
+    }
+
+    private BigDecimal calculaSaldo(Conta conta) {
+        return null;
+    }
 }

@@ -7,6 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface CorrentistaRepository extends JpaRepository<Correntista, UUID> {
 
-	Optional<Correntista> findById(UUID id);
-	
+    Optional<Correntista> findById(UUID id);
 }

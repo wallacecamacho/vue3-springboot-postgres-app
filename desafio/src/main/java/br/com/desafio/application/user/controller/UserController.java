@@ -16,10 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.application.user.service.UserService;
 import br.com.desafio.domain.user.User;
 import br.com.desafio.domain.user.UserVO;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,8 +29,8 @@ public class UserController {
 
     @PostMapping("/api/users")
     public ModelAndView signUp(@RequestBody SignUpRequest request, HttpServletRequest httpServletRequest) {
-        
-    	userService.signUp(request);
+
+        userService.signUp(request);
 
         // Redirect to login API to automatically login when signup is complete
         LoginRequest loginRequest = new LoginRequest(request.email(), request.password());

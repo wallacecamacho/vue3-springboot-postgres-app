@@ -6,6 +6,5 @@ import br.com.desafio.domain.conta.SaldoVO;
 
 @JsonRootName("saldo")
 public record SaldoContaRecord(SaldoVO saldo) {
-	public SaldoContaRecord {}
-
+    public SaldoContaRecord {}
 }

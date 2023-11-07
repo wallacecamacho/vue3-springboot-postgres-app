@@ -14,9 +14,10 @@ import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 
+import lombok.RequiredArgsConstructor;
+
 import br.com.desafio.domain.user.User;
 import br.com.desafio.domain.user.UserRepository;
-import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UserArgumentResolver implements HandlerMethodArgumentResolver {

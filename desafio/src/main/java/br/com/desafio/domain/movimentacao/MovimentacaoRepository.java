@@ -4,6 +4,4 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MovimentacaoRepository  extends JpaRepository<Movimentacao, UUID> {
-
-}
+public interface MovimentacaoRepository extends JpaRepository<Movimentacao, UUID> {}
