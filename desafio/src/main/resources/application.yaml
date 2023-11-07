@@ -1,0 +1,51 @@
+logging:
+  level:
+    com.zaxxer.hikari: TRACE
+    com.zaxxer.hikari.HikariConfig: DEBUG
+
+spring:
+  datasource:
+#    platform: postgresql
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/temporal
+    username: temporal
+    password: temporal
+    hikari:
+      max-lifetime: 1200000 # ms
+      maximum-pool-size: 5
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        # for read (where in clause)
+        default_batch_fetch_size: 100
+
+        # for write (batch insert)
+        order_inserts: true
+        order_updates: true
+        jdbc:
+          batch_size: 10
+
+security:
+  key:
+    private: classpath:app.key
+    public: classpath:app.pub
+
+decorator:
+  datasource:
+    p6spy:
+      enable-logging: true
+      
+# swagger-ui custom path
+springdoc:
+  show-oauth2-endpoints: true  
+  enable-spring-security: true
+  swagger-ui:
+    oauth:
+      clientId: classpath:app.key
+      clientSecret: classpath:app.pub
+
