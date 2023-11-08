@@ -24,8 +24,7 @@ The core logic of the application is organized as follows:
 
 Authentication and authorization management are implemented using Spring Security, with token-based authentication using JWT. Moreover, various features of Spring Boot are utilized to implement exception handling, logging, testing, and more.
 
-Through this project, you can learn how to implement backend applications based on Spring and how to utilize various Spring technologies. Additionally, by implementing an application following the RealWorld specifications, it provides a basis for
-deciding which technology stack to choose through comparisons with various other technology stacks.
+Through this project, you can learn how to implement backend applications based on Spring and how to utilize various Spring technologies. 
 
 # Database POSTGRESQL WITh DOCKER
 
